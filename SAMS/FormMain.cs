@@ -80,7 +80,7 @@ namespace SAMS
         {
             //컨트롤 위치 초기화
             guna2Panel4.Location = new System.Drawing.Point(6, 73);
-            panMeasure.Location = new System.Drawing.Point(0, 134);
+            panMeasure.Location = new System.Drawing.Point(0, 84);
 
             //메뉴 비활성화
             btnSearch.Enabled = false;
