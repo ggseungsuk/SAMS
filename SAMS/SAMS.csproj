@@ -10,7 +10,7 @@
     <ProjectGuid>{9311A0A3-4DEB-4278-8954-D78416224553}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>SAMS</RootNamespace>
-    <AssemblyName>SAMS</AssemblyName>
+    <AssemblyName>7Eyes3DPlatform</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -145,6 +145,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormSetting.resx">
       <DependentUpon>FormSetting.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
