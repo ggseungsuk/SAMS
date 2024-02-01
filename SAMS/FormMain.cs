@@ -178,7 +178,7 @@ namespace SAMS
         // MyLayer > cute 클릭 시
         private void IconButton10_Click(object sender, EventArgs e)
         {
-            sgworld.Command.Execute(1012, 25);
+            sgworld.Command.Execute(1012, 17);
             AddImportedMyLayer(Properties.Resources.cubes_solid);
         }
 
