@@ -2,12 +2,14 @@
 using CefSharp;
 using CefSharp.Structs;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Web;
 using System.Web.UI;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -53,14 +55,6 @@ namespace SAMS
         {
             InitializeComponent();
 
-            ThreeDWindow = new AxTE3DWindow() { Dock = DockStyle.Fill };
-            panMap.Controls.Add(ThreeDWindow);
-
-            InfoTree = new AxTEInformationWindow() { Dock = DockStyle.Fill };
-            panel2.Controls.Add(InfoTree);
-
-            SideMap = new AxTENavigationMap() { Dock = DockStyle.Fill };
-            panel3.Controls.Add(SideMap);
 
             //Data 폴더 확인 및 생성
             DirectoryInfo di = new DirectoryInfo(Application.StartupPath + @"\Data");
@@ -72,6 +66,18 @@ namespace SAMS
         }
         #endregion
 
+        private void createTe() {
+
+            ThreeDWindow = new AxTE3DWindow() { Dock = DockStyle.Fill };
+            panMap.Controls.Add(ThreeDWindow);
+            Debug.WriteLine(ThreeDWindow.GetOcx());
+
+            InfoTree = new AxTEInformationWindow() { Dock = DockStyle.Fill };
+            panel2.Controls.Add(InfoTree);
+
+            SideMap = new AxTENavigationMap() { Dock = DockStyle.Fill };
+            panel3.Controls.Add(SideMap);
+        }
 
         //---------------------------------------------------------------------
         //메인 폼 로딩
@@ -153,10 +159,11 @@ namespace SAMS
             toolTip1.ToolTipTitle = "이미지 데이터";
             toolTip1.SetToolTip(iconButton9, "이미지 형식의 데이터를 선택하여 불러옵니다.");
         }
-
+        List<String> prevNodeIds = new List<String>();
         // MyLayer > Layer 클릭 시
         private void IconButton7_Click(object sender, EventArgs e)
         {
+            prevNodeIds = nodeIds.ToList<String>();
             sgworld.Command.Execute(1013, 20);
             AddImportedMyLayer(Properties.Resources.object_group);
         }
@@ -165,6 +172,7 @@ namespace SAMS
         // MyLayer > 이미지 클릭 시
         private void IconButton9_Click(object sender, EventArgs e)
         {
+            prevNodeIds = nodeIds.ToList<String>();
             sgworld.Command.Execute(1014, 2);
             AddImportedMyLayer(Properties.Resources.images_regular);
         }
@@ -172,12 +180,14 @@ namespace SAMS
         // MyLayer > 산이미지 클릭 시
         private void IconButton8_Click(object sender, EventArgs e)
         {
+            prevNodeIds = nodeIds.ToList < String>();
             sgworld.Command.Execute(2110, 0);
             AddImportedMyLayer(Properties.Resources.mountain_solid);
         }
         // MyLayer > cute 클릭 시
         private void IconButton10_Click(object sender, EventArgs e)
         {
+            prevNodeIds = nodeIds.ToList<String>();
             sgworld.Command.Execute(1012, 17);
             AddImportedMyLayer(Properties.Resources.cubes_solid);
         }
@@ -189,6 +199,7 @@ namespace SAMS
         {
             ScanProjectTree("", ItemCode.ROOT);
             StringReader reader = new StringReader(tree);
+            Debug.WriteLine(prevNodeIds);
             while (true)
             {
                 string line = reader.ReadLine();
@@ -198,17 +209,16 @@ namespace SAMS
                 }
 
                 string[] nodeMember = line.Split('|');
-
                 if (nodeMember[4] == "1")
                 {
-                    // 최근에 추가한 groupId와 tree 리스트의 최신 groupID가 다르면 추가한다.
-                    if (leastImportTreePathGroupID != nodeMember[2])
+                    Debug.WriteLine(nodeMember[2]);
+                    if (prevNodeIds.IndexOf(nodeMember[2]) == -1)
                     {
                         AddTreeNode(nodeMember[1], nodeMember[2], img);
                         leastImportTreePathGroupID = nodeMember[2];
-                    }
 
-                    break;
+                        break;
+                    }
                 }
             }
         }
@@ -740,6 +750,7 @@ namespace SAMS
         //---------------------------------------------------------------------
         private void OpenProject(string tProjectUrl)
         {
+            createTe();
             string tMsg = String.Empty;
             bool bIsAsync = false;
             string tUser = String.Empty;
@@ -892,6 +903,7 @@ namespace SAMS
                 lblSwitchValue.Enabled = true;
                 label1.Enabled = true;
                 btnSetting.Enabled = true;
+                btnOpenProject.Visible = false;
 
                 //기본 레이어 불러오기
                 tvwLayerDefault.Nodes.Clear();
@@ -981,6 +993,8 @@ namespace SAMS
             sgworld.Window.ShowMessageBarText(strMessage);
         }
 
+        private List<string> nodeIds = new List<string>();
+
         //---------------------------------------------------------------------
         //프로젝트 트리 검색
         //---------------------------------------------------------------------
@@ -988,6 +1002,7 @@ namespace SAMS
         {
             try
             {
+                nodeIds.Clear();
                 //var root = sgworld.ProjectTree.GetNextItem(string.Empty, ItemCode.ROOT);
 
                 string startNodeID = sgworld.ProjectTree.FindItem(startNodeName);
@@ -1000,8 +1015,6 @@ namespace SAMS
 
                 //var tree = BuildTreeRecursive(root, 1);
                 tree = BuildTreeRecursive(root, 1);
-
-                Debug.WriteLine(tree);
             }
             catch (Exception ex)
             {
@@ -1019,6 +1032,7 @@ namespace SAMS
                 var parentID = sgworld.ProjectTree.GetNextItem(current, ItemCode.PARENT);   //부모 노드 체크
                 var visibilityValue = sgworld.ProjectTree.GetVisibility(current);
                 result += indent + "|" + currentName + "|" + current + "|" + parentID + "|" + visibilityValue + Environment.NewLine;
+                nodeIds.Add(current);
                 if (sgworld.ProjectTree.IsGroup(current))
                 {
                     var child = sgworld.ProjectTree.GetNextItem(current, ItemCode.CHILD);
@@ -1135,7 +1149,6 @@ namespace SAMS
                 }
             }
 
-            btnOpenProject.Visible = false;
 
             OpenProject(@targetFile);
         }
